@@ -44,5 +44,9 @@ def protected():
     return jsonify(logged_in_as=current_user), 200
 
 
+@app.route("/", methods = ["GET"])
+def main():
+    return "SETI @ Purdue"
+
 if __name__ == "__main__":
-    app.run(host = 'localhost', port = 8080)
+    app.run(host = '0.0.0.0', port = 80)

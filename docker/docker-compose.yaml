@@ -1,0 +1,14 @@
+services:
+  web: 
+    build: web/
+    # flask requires SIGINT to stop gracefully
+    # (default stop signal from Compose is SIGTERM)
+    stop_signal: SIGINT
+    volumes:
+      - ../web/:/usr/web
+    command: /usr/web/start.sh
+    ports:
+      - "8000:8000"
+      - "8080:8080"
+      - "443:443"
+      - "80:80"

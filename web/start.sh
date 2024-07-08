@@ -1,0 +1,4 @@
+#!/bin/bash
+cd /usr/web/
+python3 -m pip install -r requirements.txt
+python3 /usr/web/main.py
