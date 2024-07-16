@@ -5,10 +5,13 @@ services:
     # (default stop signal from Compose is SIGTERM)
     stop_signal: SIGINT
     volumes:
-      - ../web/:/usr/web
-    command: /usr/web/start.sh
+      - ../web/:/usr/citizenseti/web
+    command: /usr/citizenseti/web/start.sh
     ports:
       - "8000:8000"
       - "8080:8080"
       - "443:443"
       - "80:80"
+  spark:
+    build: spark/
+

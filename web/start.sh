@@ -1,4 +1,4 @@
 #!/bin/bash
-cd /usr/web/
+cd /usr/citizenseti/web
 python3 -m pip install -r requirements.txt
-python3 /usr/web/main.py
+python3 /usr/citizenseti/web/main.py

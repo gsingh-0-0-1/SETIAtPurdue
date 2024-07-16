@@ -1,3 +1,240 @@
-body {
-	background-color: #222;
+.lato-thin {
+  font-family: "Lato", sans-serif;
+  font-weight: 100;
+  font-style: normal;
 }
+
+.lato-light {
+  font-family: "Lato", sans-serif;
+  font-weight: 300;
+  font-style: normal;
+}
+
+.lato-regular {
+  font-family: "Lato", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.lato-bold {
+  font-family: "Lato", sans-serif;
+  font-weight: 700;
+  font-style: normal;
+}
+
+.lato-black {
+  font-family: "Lato", sans-serif;
+  font-weight: 900;
+  font-style: normal;
+}
+
+.lato-thin-italic {
+  font-family: "Lato", sans-serif;
+  font-weight: 100;
+  font-style: italic;
+}
+
+.lato-light-italic {
+  font-family: "Lato", sans-serif;
+  font-weight: 300;
+  font-style: italic;
+}
+
+.lato-regular-italic {
+  font-family: "Lato", sans-serif;
+  font-weight: 400;
+  font-style: italic;
+}
+
+.lato-bold-italic {
+  font-family: "Lato", sans-serif;
+  font-weight: 700;
+  font-style: italic;
+}
+
+.lato-black-italic {
+  font-family: "Lato", sans-serif;
+  font-weight: 900;
+  font-style: italic;
+}
+
+
+
+#block-seti-branding {
+    display: inline-block; 
+    position: fixed;
+    height: 100%;
+    left: 3em;
+    top: 2em;
+}
+
+#block-seti-branding > img {
+}
+
+#header {
+
+}
+
+.navlist {
+    display: inline-block;
+}
+
+.fl-bg-video {
+    height: unset !important;
+    max-height: unset !important;
+}
+
+.fl-bg-video video {
+    margin-bottom: -6px;
+    z-index: -1;
+    object-fit: cover;
+}
+
+video {
+    display: inline-block;
+    vertical-align: baseline;
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    border: 0;
+    object-fit: cover;
+}
+
+/* styles.css */
+
+body {
+    font-family: Lato, Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #121212;
+    font-size: 2vh;
+    height: 100%;
+    width: 100%;
+}
+
+header {
+    position: fixed;
+    background-color: #111;
+    color: #e0e0e0;
+    padding: 2em 1.5em;
+    text-align: center;
+    align-content: center;
+    left: 50%;
+    transform: translate(-50%, 0%);
+    top: -8px;
+    width: auto;
+    font-size: 1vw;
+    border-radius: 8px;
+}
+
+header h1 {
+    margin: 0;
+}
+
+nav ul {
+    list-style: none;
+    padding: 0;
+}
+
+nav ul li {
+    display: inline;
+    margin: 0 1em;
+}
+
+nav ul li a {
+    color: #e0e0e0;
+    text-decoration: none;
+}
+
+section {
+    margin: 2em auto;
+    max-width: 65em;
+    padding: 1.5em;
+    background-color: #1e1e1e;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    color: #e0e0e0;
+}
+
+#seti-logo-section {
+    background-color: #0000;
+    box-shadow: none;
+    height: 35em;
+    text-align: center;
+    align-content: center;
+}
+
+section h2 {
+    border-bottom: 2px solid #e0e0e0;
+    padding-bottom: 0.5em;
+}
+
+footer {
+    display: none;
+    background-color: #1e1e1e;
+    color: #e0e0e0;
+    text-align: center;
+    padding: 1em 0;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+}
+
+footer a {
+    color: #e0e0e0;
+    text-decoration: none;
+}
+
+.team-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1em;
+    justify-content: space-between;
+}
+
+.team-member {
+    background: #242424;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    flex: 1 1 calc(50% - 1em);
+    margin-bottom: 2em;
+    padding: 1em;
+    display: flex;
+    gap: 3em;
+    align-items: center;
+    max-width: calc(100% - 1em);
+    flex-direction: row;
+}
+
+.team-member img {
+    border-radius: 50%;
+    width: 100px;
+    height: 100px;
+}
+
+.team-member h3 {
+    flex: 0.3;
+}
+
+.team-member-role {
+    flex: 0.3;
+}
+
+.team-member-desc {
+    max-width: 30em;
+    flex: 1;
+}
+
+@media (max-width: 600px) {
+    .team-member {
+        flex-direction: column;
+        align-items: flex-start;
+        max-width: 100%;
+    }
+
+    .team-member img {
+        margin-bottom: 1em;
+    }
+}
+
