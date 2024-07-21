@@ -16,4 +16,6 @@ services:
     build: spark/
     volumes:
       - ../spark:/usr/citizenseti/spark
+    environment:
+      - SPARK_MODE=master
     command: /usr/citizenseti/spark/start.sh
