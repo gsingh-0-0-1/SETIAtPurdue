@@ -14,4 +14,6 @@ services:
       - "80:80"
   spark:
     build: spark/
-
+    volumes:
+      - ../spark:/usr/citizenseti/spark
+    command: /usr/citizenseti/spark/start.sh

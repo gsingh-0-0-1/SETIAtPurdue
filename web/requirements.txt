@@ -1,2 +1,3 @@
 Flask
 flask-jwt-extended
+pyspark==3.5.1

@@ -1,1 +1,1 @@
-FROM apache/spark
+FROM bitnami/spark
