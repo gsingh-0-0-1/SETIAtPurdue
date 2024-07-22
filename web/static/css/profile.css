@@ -1,0 +1,39 @@
+header h1 {
+    margin: 0;
+}
+
+#profile-section {
+    margin: 2em auto;
+    max-width: 30em;
+    padding: 1.5em;
+    background-color: #1e1e1e;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    color: #e0e0e0;
+    z-index: 1;
+    position: relative;
+}
+
+.profile-info {
+    display: flex;
+    align-items: center;
+}
+
+.profile-avatar {
+    border-radius: 50%;
+    width: 150px;
+    height: 150px;
+    margin-right: 2em;
+}
+
+.profile-details {
+    flex: 1;
+}
+
+.profile-details h3, .profile-details p {
+    margin: 0.5em 0;
+}
+
+#block-seti-branding > a > img {
+	max-width: 15em;
+}

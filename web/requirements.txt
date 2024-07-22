@@ -1,3 +1,4 @@
 Flask
 flask-jwt-extended
-pyspark==3.5.1
+mysql-connector-python
+python-dotenv

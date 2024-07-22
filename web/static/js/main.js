@@ -1,8 +1,3 @@
-async function storeJWT(response) {
-	var body = await response.json()
-	localStorage.setItem("SETICitizenJWT", body["jwt"])	
-}
-
 async function handleUserSignup() {
 	var response = await fetch("/signup_request", {
 		headers: {
@@ -11,10 +6,23 @@ async function handleUserSignup() {
 		method: "POST",
 		body: JSON.stringify({
 			username: document.getElementById("user_input_username").value,
-			password: document.getElementById("user_input_password").value
+			password: document.getElementById("user_input_password").value,
+			fullname: document.getElementById("user_input_fullname").value,
+			email: document.getElementById("user_input_email").value,
+			affil: document.getElementById("user_input_affiliation").value
 		})
 	})
-	storeJWT(response)
+	.then((response) => {
+                if (response.status == 200) {
+                        window.location.href = "/profile"
+                }
+		else {
+			return response.text()
+		}
+        })
+	.then((text) => {
+                document.getElementById("error_message").textContent = text
+        })
 }
 
 async function handleUserLogin() {
@@ -29,6 +37,22 @@ async function handleUserLogin() {
                         password: document.getElementById("user_input_password").value
                 })
         })
-	storeJWT(response)
+	.then((response) => {
+		if (response.status == 200) {
+			window.location.href = "/profile"
+		}
+		else {
+			return response.text()
+		}
+	})
+	.then((text) => {
+		document.getElementById("error_message").textContent = text
+	})
 }
 
+document.addEventListener("keypress", function(event) {
+	if (event.key === "Enter") {
+		event.preventDefault();
+		document.getElementById("submit-button").click();
+	}
+});

@@ -1,0 +1,105 @@
+#seti-login-logo {
+	position: relative;
+	align-content: center;
+	text-align: center;
+	left: 0;
+	top: 0;
+	width: 100%;
+}
+
+#seti-login-logo img {
+	max-width: 20em;
+}
+
+#shootingStarsCanvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -2; 
+}
+
+#login-section {
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 50px;
+    box-shadow: 0 0 50px rgba(255, 255, 255, 0.5);
+    width: 300px;
+    text-align: center;
+}
+
+#login-section h2 {
+    margin-bottom: 20px;
+    font-size: 24px;
+    color: #fff;
+}
+
+.form-group {
+    margin-bottom: 15px;
+    text-align: left;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 14px;
+}
+
+.form-group input {
+    width: calc(100% - 20px);
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+    font-size: 16px;
+}
+
+.form-group select {
+    padding: 0.8em;
+    font-size: 1em;
+    border-radius: 4px;
+    border: 1px solid #333;
+    background-color: #121212;
+    color: #e0e0e0;
+}
+
+button {
+    background: #1e90ff;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    font-size: 16px;
+    color: #fff;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+button:hover {
+    background: #1c7ed6;
+}
+
+button:disabled,
+button[disabled] {
+	background: #777;
+}
+
+/* login.css */
+#login-section h2 {
+    font-family: 'Orbitron', sans-serif;
+}
+
+.form-group input:focus {
+    outline: none;
+    box-shadow: 0 0 10px rgba(30, 144, 255, 0.8);
+}
+
+button {
+    background: linear-gradient(45deg, #1e90ff, #00bfff);
+    box-shadow: 0 0 15px rgba(30, 144, 255, 0.5);
+}
+
+button:hover {
+    box-shadow: 0 0 20px rgba(30, 144, 255, 0.8);
+}
+
