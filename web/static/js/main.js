@@ -14,7 +14,7 @@ async function handleUserSignup() {
 	})
 	.then((response) => {
                 if (response.status == 200) {
-                        window.location.href = "/profile"
+                        window.location.href = "/wait_for_conf"
                 }
 		else {
 			return response.text()

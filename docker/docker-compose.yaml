@@ -19,6 +19,7 @@ services:
     stop_signal: SIGINT
     volumes:
       - ../web/:/usr/citizenseti/web
+      - ./files/gmail_oauth2_creds.json:/usr/gmail/oauth2_creds.json
     command: /usr/citizenseti/web/start.sh
     ports:
       - "443:443"

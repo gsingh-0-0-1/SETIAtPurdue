@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Email Confirmation</title>
+
+	<link rel="stylesheet" href="/static/css/main.css">
+	<style>
+		body, html {
+			margin: 0;
+			overflow: hidden;
+			background: black;
+		}
+		canvas {
+			display: block;
+			z-index: -1;
+		}
+		#confirmtext {
+			position: fixed;
+			top: 50%;
+			width: 100%;
+			align-content: center;
+			text-align: center;
+			color: white;
+			z-index: 0;
+			font-size: 3vh;
+		}
+	</style>
+</head>
+<body>
+    <canvas id="nightSky"></canvas>
+    <div id="confirmtext" class="lato">
+    	Please check your email!
+    </div>
+    <script src="/static/js/space-animation.js"></script>
+</body>
+</html>
+

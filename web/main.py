@@ -20,15 +20,22 @@ from dotenv import load_dotenv
 import mysql.connector as mysql
 import os
 import json
+import random
 
+import src.mail.mail as mail
 
 ALL_AFFILS = {
         "Purdue University": "purdue.edu",
         "SETI Institute": "seti.org"
 }
 
+TOKEN_CHARS = [chr(n) for n in range(65, 91)] + [chr(n) for n in range(97, 123)]
+
 def match_email_affil(email, affil):
     return email.endswith(ALL_AFFILS[affil])
+
+def random_string_token(l = 100):
+    return ''.join([random.choice(TOKEN_CHARS) for i in range(l)])
 
 cnx = mysql.connect(
         user='root',
@@ -38,8 +45,21 @@ cnx = mysql.connect(
         port=3306
     )
 
+TIMEOUT = 48 * 60 * 60
+
 cursor = cnx.cursor()
-cursor.execute("CREATE TABLE IF NOT EXISTS userpass(user VARCHAR(255) PRIMARY KEY, pwhash VARCHAR(255))")
+
+cursor.execute(f'SET GLOBAL connect_timeout={TIMEOUT}')
+cursor.execute(f'SET GLOBAL interactive_timeout={TIMEOUT}')
+cursor.execute(f'SET GLOBAL wait_timeout={TIMEOUT}')
+
+cursor.execute("""CREATE TABLE IF NOT EXISTS userpass(
+    user VARCHAR(255) PRIMARY KEY, 
+    pwhash VARCHAR(255),
+    conf VARCHAR(1),
+    conftoken VARCHAR(255)
+    )
+""")
 cursor.execute("""CREATE TABLE IF NOT EXISTS userinfo(
     user VARCHAR(255) PRIMARY KEY,
     fullname VARCHAR(255),
@@ -67,12 +87,18 @@ def get_user_pwhash(user):
     cursor.execute("""
         SELECT pwhash
         FROM userpass
-        WHERE user=%(user)s
+        WHERE
+            user=%(user)s
+            AND
+            conf='Y'
     """, {
         'user': user
     })
-    pwhash = cursor.fetchall()[0][0]
+    result = cursor.fetchall()
     cursor.close()
+    if len(result) == 0:
+        return None
+    pwhash = result[0][0]
     return pwhash
 
 def get_user_info(user):
@@ -95,13 +121,20 @@ def get_user_info(user):
 
 def create_new_user(user, pwhash, fullname, email, affil):
     cursor = cnx.cursor()
+    conftoken = random_string_token(255)
     cursor.execute("""
         INSERT INTO userpass
         VALUES
-        (%(user)s, %(pwhash)s)
+        (
+            %(user)s,
+            %(pwhash)s,
+            'N',
+            %(conftoken)s
+        )
     """, {
         'user': user,
-        'pwhash': pwhash
+        'pwhash': pwhash,
+        'conftoken': conftoken
     })
     cursor.execute("""
         INSERT INTO userinfo
@@ -121,23 +154,51 @@ def create_new_user(user, pwhash, fullname, email, affil):
     cnx.commit()
     cursor.close()
 
+    mail.send_confirmation_email(fullname, email, conftoken)
+
 def check_user_exists(user):
     cursor = cnx.cursor()
     cursor.execute("""
         SELECT COUNT(1)
         FROM userpass
+        WHERE 
+            user=%(user)s
+    """, {
+        'user': user
+    })
+    result = cursor.fetchall()
+    cursor.close()
+    if result[0][0] == 0:
+        return False
+    return True
+
+def get_user_from_conftoken(conftoken):
+    cursor = cnx.cursor()
+    cursor.execute("""
+        SELECT user
+        FROM userpass
+        WHERE
+            conftoken=%(conftoken)s
+    """, {
+        'conftoken': conftoken
+    })
+    result = cursor.fetchall()
+    cursor.close()
+    if len(result) == 0:
+        return None
+    return result[0][0]
+
+def confirm_user(user):
+    cursor = cnx.cursor()
+    cursor.execute("""
+        UPDATE userpass
+        SET conf='Y'
         WHERE user=%(user)s
     """, {
         'user': user
     })
-    print("checking user " + user + " exists")
-    result = cursor.fetchall()
-    print(result)
-    if result[0][0] == 0:
-        cursor.close()
-        return False
+    cnx.commit()
     cursor.close()
-    return True
 
 @app.after_request
 def refresh_expiring_jwts(response):
@@ -158,6 +219,31 @@ def refresh_expiring_jwts(response):
 @jwt.expired_token_loader
 def redirect_to_login(*args):
     return redirect("/login")
+
+@app.route("/confirmaccount/<string:conftoken>")
+def confirmaccount(conftoken):
+    if not conftoken:
+        return redirect("/login")
+
+    user = get_user_from_conftoken(conftoken)
+    if not user:
+        return redirect("/signup")
+
+    confirm_user(user)
+
+    access_token = create_access_token(
+        identity = user,
+    )
+
+    response = redirect("/profile")
+    #jsonify({
+    #    "msg": "login successful",
+    #    "userid": username,
+    #})
+
+    set_access_cookies(response, access_token)
+
+    return response
 
 @app.route("/signup_request", methods=["POST"])
 def signup_request():
@@ -184,20 +270,19 @@ def signup_request():
 
     pwhash = generate_password_hash(password)
 
-    #USERPASSDB[username] = pwhash
-
     create_new_user(username, pwhash, fullname, email, affil)
 
-    access_token = create_access_token(
-        identity = username,
-    )
-    response = jsonify({
-        "msg": "signup successful",
-        "userid": username,
-    })
-    set_access_cookies(response, access_token)
+    #access_token = create_access_token(
+    #    identity = username,
+    #)
+    response = "Success", 200
+    #set_access_cookies(response, access_token)
     return response
 
+
+@app.route("/wait_for_conf")
+def wait_for_conf():
+    return render_template('confirm.html')
 
 @app.route("/login_request", methods=["POST"])
 def login_request():
@@ -206,12 +291,14 @@ def login_request():
     if not username or not password:
         return "No username or password provided", 400
 
-    if not check_user_exists:
+    if not check_user_exists(username):
         return "Invalid username or password", 400
 
-    
+    user_pwhash = get_user_pwhash(username)
+    if not user_pwhash:
+        return "Please confirm your account via the link sent to your email!", 400
 
-    if not check_password_hash(get_user_pwhash(username), password):
+    if not check_password_hash(user_pwhash, password):
         return "Invalid username or password", 400
 
     access_token = create_access_token(
