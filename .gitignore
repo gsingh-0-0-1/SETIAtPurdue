@@ -2,3 +2,5 @@ venv
 *.env
 gmail_oauth2_creds.json
 *creds*
+
+*pycache*

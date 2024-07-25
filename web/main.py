@@ -17,59 +17,16 @@ from flask_jwt_extended import unset_jwt_cookies
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from dotenv import load_dotenv
-import mysql.connector as mysql
 import os
 import json
 import random
 
 import src.mail.mail as mail
+from src.sql.client import MySQLClient
+from src.helpers import match_email_affil, random_string_token
+from src.constants import ALL_AFFILS
 
-ALL_AFFILS = {
-        "Purdue University": "purdue.edu",
-        "SETI Institute": "seti.org"
-}
-
-TOKEN_CHARS = [chr(n) for n in range(65, 91)] + [chr(n) for n in range(97, 123)]
-
-def match_email_affil(email, affil):
-    return email.endswith(ALL_AFFILS[affil])
-
-def random_string_token(l = 100):
-    return ''.join([random.choice(TOKEN_CHARS) for i in range(l)])
-
-cnx = mysql.connect(
-        user='root',
-        password=os.environ.get("MYSQL_ROOT_PASSWORD"),
-        database='mysql',
-        host='cseti-mysql',
-        port=3306
-    )
-
-TIMEOUT = 48 * 60 * 60
-
-cursor = cnx.cursor()
-
-cursor.execute(f'SET GLOBAL connect_timeout={TIMEOUT}')
-cursor.execute(f'SET GLOBAL interactive_timeout={TIMEOUT}')
-cursor.execute(f'SET GLOBAL wait_timeout={TIMEOUT}')
-
-cursor.execute("""CREATE TABLE IF NOT EXISTS userpass(
-    user VARCHAR(255) PRIMARY KEY, 
-    pwhash VARCHAR(255),
-    conf VARCHAR(1),
-    conftoken VARCHAR(255)
-    )
-""")
-cursor.execute("""CREATE TABLE IF NOT EXISTS userinfo(
-    user VARCHAR(255) PRIMARY KEY,
-    fullname VARCHAR(255),
-    email VARCHAR(255),
-    affil VARCHAR(255)
-    )
-""")
-cursor.close()
-
-USERPASSDB = {}
+MYSQL_CLIENT = MySQLClient()
 
 app = Flask(__name__,
 	static_folder='./static'
@@ -81,124 +38,6 @@ jwt = JWTManager(app)
 
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = datetime.timedelta(seconds = 24 * 60 * 60)
 REFRESH_MINUTES = 120
-
-def get_user_pwhash(user):
-    cursor = cnx.cursor()
-    cursor.execute("""
-        SELECT pwhash
-        FROM userpass
-        WHERE
-            user=%(user)s
-            AND
-            conf='Y'
-    """, {
-        'user': user
-    })
-    result = cursor.fetchall()
-    cursor.close()
-    if len(result) == 0:
-        return None
-    pwhash = result[0][0]
-    return pwhash
-
-def get_user_info(user):
-    cursor = cnx.cursor()
-    cursor.execute("""
-        SELECT user, fullname, email, affil
-        FROM userinfo
-        WHERE user=%(user)s
-    """, {
-        'user': user
-    })
-    result = cursor.fetchall()[0]
-    cursor.close()
-    return {
-        "user": user,
-        "fullname" : result[1],
-        "email": result[2],
-        "affil": result[3]
-    }
-
-def create_new_user(user, pwhash, fullname, email, affil):
-    cursor = cnx.cursor()
-    conftoken = random_string_token(255)
-    cursor.execute("""
-        INSERT INTO userpass
-        VALUES
-        (
-            %(user)s,
-            %(pwhash)s,
-            'N',
-            %(conftoken)s
-        )
-    """, {
-        'user': user,
-        'pwhash': pwhash,
-        'conftoken': conftoken
-    })
-    cursor.execute("""
-        INSERT INTO userinfo
-        VALUES
-        (
-            %(user)s,
-            %(fullname)s,
-            %(email)s,
-            %(affil)s
-        )
-    """, {
-        'user': user,
-        'fullname': fullname,
-        'email': email,
-        'affil': affil
-    })
-    cnx.commit()
-    cursor.close()
-
-    mail.send_confirmation_email(fullname, email, conftoken)
-
-def check_user_exists(user):
-    cursor = cnx.cursor()
-    cursor.execute("""
-        SELECT COUNT(1)
-        FROM userpass
-        WHERE 
-            user=%(user)s
-    """, {
-        'user': user
-    })
-    result = cursor.fetchall()
-    cursor.close()
-    if result[0][0] == 0:
-        return False
-    return True
-
-def get_user_from_conftoken(conftoken):
-    cursor = cnx.cursor()
-    cursor.execute("""
-        SELECT user
-        FROM userpass
-        WHERE
-            conftoken=%(conftoken)s
-    """, {
-        'conftoken': conftoken
-    })
-    result = cursor.fetchall()
-    cursor.close()
-    if len(result) == 0:
-        return None
-    return result[0][0]
-
-def confirm_user(user):
-    cursor = cnx.cursor()
-    cursor.execute("""
-        UPDATE userpass
-        SET conf='Y'
-        WHERE user=%(user)s
-    """, {
-        'user': user
-    })
-    cnx.commit()
-    cursor.close()
 
 @app.after_request
 def refresh_expiring_jwts(response):
@@ -225,11 +64,11 @@ def confirmaccount(conftoken):
     if not conftoken:
         return redirect("/login")
 
-    user = get_user_from_conftoken(conftoken)
+    user = MYSQL_CLIENT.get_user_from_conftoken(conftoken)
     if not user:
         return redirect("/signup")
 
-    confirm_user(user)
+    MYSQL_CLIENT.confirm_user(user)
 
     access_token = create_access_token(
         identity = user,
@@ -265,12 +104,14 @@ def signup_request():
     if not fullname:
         return "No full name provided", 400
 
-    if check_user_exists(username):
+    if MYSQL_CLIENT.check_user_exists(username):
         return "Username already in use", 400
 
     pwhash = generate_password_hash(password)
 
-    create_new_user(username, pwhash, fullname, email, affil)
+    conftoken = random_string_token(255)
+    MYSQL_CLIENT.create_new_user(username, pwhash, fullname, email, affil, conftoken)
+    mail.send_confirmation_email(fullname, email, conftoken)
 
     #access_token = create_access_token(
     #    identity = username,
@@ -291,10 +132,10 @@ def login_request():
     if not username or not password:
         return "No username or password provided", 400
 
-    if not check_user_exists(username):
+    if not MYSQL_CLIENT.check_user_exists(username):
         return "Invalid username or password", 400
 
-    user_pwhash = get_user_pwhash(username)
+    user_pwhash = MYSQL_CLIENT.get_user_pwhash(username)
     if not user_pwhash:
         return "Please confirm your account via the link sent to your email!", 400
 
@@ -321,7 +162,7 @@ def profile():
 @jwt_required(locations=["cookies"])
 def whoami():
     current_user = get_jwt_identity()
-    return json.dumps(get_user_info(current_user))
+    return json.dumps(MYSQL_CLIENT.get_user_info(current_user))
 
 @app.route("/", methods = ["GET"])
 def main():
