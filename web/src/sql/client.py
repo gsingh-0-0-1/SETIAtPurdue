@@ -26,13 +26,36 @@ class MySQLClient:
             pwhash VARCHAR(255),
             conf VARCHAR(1),
             conftoken VARCHAR(255)
+            create_dt DATETIME,
+            conf_dt DATETIME
             )
         """)
+
         cursor.execute("""CREATE TABLE IF NOT EXISTS userinfo(
             user VARCHAR(255) PRIMARY KEY,
             fullname VARCHAR(255),
             email VARCHAR(255),
             affil VARCHAR(255)
+            )
+        """)
+
+        cursor.execute("""CREATE TABLE IF NOT EXISTS completed_trainings(
+            user VARCHAR(255),
+            training_id INT,
+            dt DATETIME
+            )
+        """)
+
+        cursor.execute("""CREATE TABLE IF NOT EXISTS trainings(
+            id INT PRIMARY KEY,
+            desc VARCHAR(255)
+        """)
+
+        cursor.execute("""CREATE TABLE IF NOT EXISTS datareviews(
+            filename VARCHAR(255),
+            user VARCHAR(255),
+            rating_class INT,
+            dt DATETIME
             )
         """)
         cursor.close()
