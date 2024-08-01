@@ -25,7 +25,7 @@ class MySQLClient:
             user VARCHAR(255) PRIMARY KEY, 
             pwhash VARCHAR(255),
             conf VARCHAR(1),
-            conftoken VARCHAR(255)
+            conftoken VARCHAR(255),
             create_dt DATETIME,
             conf_dt DATETIME
             )
