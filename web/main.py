@@ -26,11 +26,18 @@ from src.sql.client import MySQLClient
 from src.helpers import match_email_affil, random_string_token
 from src.constants import ALL_AFFILS
 
+from api import api_blueprint
+from training import train_blueprint
+
 MYSQL_CLIENT = MySQLClient()
 
 app = Flask(__name__,
 	static_folder='./static'
 )
+
+app.register_blueprint(api_blueprint)
+app.register_blueprint(train_blueprint)
+
 
 # Setup the Flask-JWT-Extended extension
 app.config["JWT_SECRET_KEY"] = "super-secret"  # Change this!
@@ -75,10 +82,6 @@ def confirmaccount(conftoken):
     )
 
     response = redirect("/profile")
-    #jsonify({
-    #    "msg": "login successful",
-    #    "userid": username,
-    #})
 
     set_access_cookies(response, access_token)
 

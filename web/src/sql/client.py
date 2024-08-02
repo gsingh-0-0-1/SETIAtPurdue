@@ -48,7 +48,8 @@ class MySQLClient:
 
         cursor.execute("""CREATE TABLE IF NOT EXISTS trainings(
             id INT PRIMARY KEY,
-            desc VARCHAR(255)
+            description VARCHAR(255)
+            )
         """)
 
         cursor.execute("""CREATE TABLE IF NOT EXISTS datareviews(
