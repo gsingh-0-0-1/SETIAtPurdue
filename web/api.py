@@ -4,8 +4,11 @@ from flask import (
     render_template,
     request
 )
+
+from flask_jwt_extended import jwt_required
 from jinja2 import TemplateNotFound
 import json
+import os
 
 api_blueprint = Blueprint('api', __name__,
                         template_folder='templates')
@@ -26,10 +29,12 @@ ITEMS = {
     }
     }
 
+@jwt_required(locations=["cookies"])
 @api_blueprint.route('/api', methods = ["GET"])
 def show():
     return "API"
 
+@jwt_required(locations=["cookies"])
 @api_blueprint.route('/api/training/<trainingid>/<action>', methods = ["GET", "POST"])
 def training_action(trainingid, action):
     if trainingid == '1':
